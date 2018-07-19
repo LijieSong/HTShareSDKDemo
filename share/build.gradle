@@ -1,0 +1,47 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+    }
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
+        // 防止在发布的时候出现因MissingTranslation导致Build Failed!
+        disable 'MissingTranslation'
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    def BASENAME = "sharesdk"
+    def VERSION = "_V1.0"
+    def DestinationPath = "build/libs/" //生成jar包的位置
+    def zipFile = file('build/intermediates/packaged-classes/release/classes.jar') //待打包文件位置
+    // app/build/intermediates/packaged-classes/debug/
+    task deleteBuild(type: Delete) {
+        delete DestinationPath + BASENAME + VERSION + ".jar"
+    }
+
+    task makeJar(type: Jar) {
+        from zipTree(zipFile)
+        from fileTree(dir: 'src/main', includes: ['assets/**']) //将assets目录打入jar包
+        baseName = BASENAME + VERSION
+        destinationDir = file(DestinationPath)
+    }
+
+    makeJar.dependsOn(deleteBuild, build)
+
+}
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:28.0.0-alpha3'
+    implementation 'com.alibaba:fastjson:1.2.24'
+    implementation 'com.alibaba:fastjson:1.1.56.android'
+}
